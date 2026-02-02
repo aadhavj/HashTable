@@ -2,6 +2,7 @@
 #include <cstring>
 #include <vector>
 #include <iomanip>
+#include <fstream>
 using namespace std;
 
 //Instantiate student structure
@@ -10,8 +11,21 @@ struct Student {
 	char lastName[100];
 	int ID;
 	float GPA;
+	Student* next;
 };
-
+int hashMe(Student* hashable, int maxLen){
+	return ( (int) ( (float) hashable->ID * hashable->GPA) % maxLen);
+}
+void nullify(Student** hashTable, int hashLen){
+	for (int i = 0; i < hashLen; i++){
+		hashTable[i] = nullptr;
+	}
+}
+Student* getRandomStudent(){
+	Student* rando = new Student();
+	//rando->firstName = 
+	return rando;
+}
 int main(){
 
 	//Basic var instantiation
@@ -21,13 +35,41 @@ int main(){
 	int inputID;
 	float GPA;
 	bool runProgram = true;
-	vector<Student*> studentList;
+	Student* hashTable[100];
+	char* firstNames[1000];
+	char* lastNames[1000];
+	int hashLen = 100;
 
 	//Valid Command prompts
 	char del[] = "DELETE";
 	char print[] = "PRINT";
 	char add[] = "ADD";
 	char quit[] = "QUIT";
+	
+	//hashTable nullification
+	nullify(hashTable, hashLen);
+
+	//Name instantiation
+	ifstream firstNameFile("firstNames.txt");
+	for (int i = 0; i < 1000; i++){
+		firstNames[i] = new char[1000];
+		firstNameFile >> firstNames[i];
+	}
+	firstNameFile.close();
+	
+	ifstream lastNameFile("lastNames.txt");
+	for (int i = 0; i < 1000; i++){
+		lastNames[i] = new char[1000];
+		lastNameFile >> lastNames[i];
+		lastNames[i] = lastNames[i];
+	}
+	lastNameFile.close();
+	
+	for (int i = 0; i < 1000; i++){
+		cout << firstNames[i] << " " << lastNames[i] << endl;
+	}
+
+
 
 	while (runProgram){
 		//Command parsing and prompting
@@ -44,9 +86,10 @@ int main(){
 			
 			//Loops through and deletes student with that ID
 			int i = 0;
-			for (Student* element : studentList){
+			for (Student* element : hashTable){
 				if (element->ID == inputID){
-					studentList.erase(studentList.begin()+i);
+					delete hashTable[i];
+					hashTable[i] = nullptr;
 				}
 				i++;
 			}
@@ -55,12 +98,15 @@ int main(){
 			cout << "Print command initiated" << endl;
 			
 			//Loops through all objects and lists their attributes
-			for (Student* element : studentList){
-				cout << "\nFirst Name: " << element->firstName << endl;
-				cout << "Last Name: " << element->lastName << endl;
-				cout << "Student ID: " << element->ID << endl;
-				cout << "Student GPA: " << fixed << setprecision(2) << element->GPA << endl;
-				cout << endl;
+			for (int i = 0; i < hashLen;i++){
+				if (hashTable[i] != nullptr){
+					Student* tempLinked = hashTable[i];
+					while (tempLinked != nullptr){
+						cout << hashMe(tempLinked, hashLen) << ": " << tempLinked->firstName << " "  << tempLinked->lastName << " " << tempLinked->ID << " " << fixed << setprecision(2) << tempLinked->GPA << " -> ";
+						tempLinked = tempLinked->next;
+					}
+					cout << endl;
+				}
 			}
 		}
 		else if (strcmp(command, add) == 0){
@@ -85,9 +131,28 @@ int main(){
 			strcpy(createdStudent->lastName,lName);
 			createdStudent->ID = inputID;
 			createdStudent->GPA = GPA;
+			createdStudent->next = nullptr;
 			
-			//Add to studentList array
-			studentList.push_back(createdStudent);
+			//Add to hashTable array
+			if (hashTable[hashMe(createdStudent, hashLen)] != nullptr){
+				Student* tempLinked = hashTable[hashMe(createdStudent, hashLen)];
+				int numberOfLinkedStudents = 1;
+				while (tempLinked->next != nullptr){
+					tempLinked = tempLinked->next;
+					numberOfLinkedStudents++;
+				}
+				if (numberOfLinkedStudents == 3){ //Collision Detected
+					cout << "Error: Not adding student because linked has reached max of 3 student objects." << endl;
+				}
+				else{
+					tempLinked->next = createdStudent;
+				}
+			}
+			else{
+				hashTable[hashMe(createdStudent, hashLen)] = createdStudent;
+			}
+
+			cout << "Student HASH: " << hashMe(createdStudent, hashLen) << endl;
 
 			cout << "Student Created!" << endl;
 		}
