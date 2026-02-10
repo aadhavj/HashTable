@@ -88,9 +88,43 @@ int main(){
 		if (strcmp(command, del) == 0){
 			cout << "Delete command initiated" << endl;
 			
+			bool objectDeleted = false;
+
 			//Gets student ID to delete
 			cout << "Enter Student ID (Delete): ";
 			cin >> inputID;
+			
+			//search through hashTable
+			for (int i = 0; i < hashLen;i++){
+				Student* current = hashTable[i];
+				Student* prev = current;
+				if (current != nullptr){
+					while (current != nullptr){
+						if (current->ID == inputID){
+							if (prev != current){
+								prev->next = current->next;
+							}
+							else{
+								if (current->next == nullptr){
+									hashTable[i] = nullptr;
+								}
+								else{
+									hashTable[i] = current->next;
+								}
+							}
+							delete current;
+							objectDeleted = true;
+							break;
+						}
+						prev = current;
+						current = current->next;
+					}
+				}
+			}
+
+			if (not objectDeleted){
+				cout << "Invalid student ID. An object with that ID does not currently exist." << endl;
+			}
 		}
 		else if (strcmp(command, print) == 0) {
 			cout << "Print command initiated" << endl;
@@ -172,13 +206,13 @@ int main(){
 						tempLinked = tempLinked->next;
 						numberOfLinkedStudents++;
 					}
-					if (numberOfLinkedStudents == 3){ //Collision Detected
+					if (numberOfLinkedStudents >= 3){ //Collision Detected
 						doubleHash = true;
 						//cout << "Error: Not adding student because linked has reached max of 3 student objects." << endl;
 					}
-					else{
-						tempLinked->next = createdStudent;
-					}
+					
+					tempLinked->next = createdStudent;
+					
 				}
 				else{
 					hashTable[hashMe(createdStudent, hashLen)] = createdStudent;
@@ -209,7 +243,7 @@ int main(){
 			//Loop through hashTable
 			for (int i = 0; i < hashLen; i++){
 				current = hashTable[i];
-				if (current != nullptr){
+				while (current != nullptr){
 		
 					//Add to tempHashTable array
 					if (tempHash[hashMe(current, tempHashLen)] != nullptr){
@@ -219,16 +253,17 @@ int main(){
 							tempLinked = tempLinked->next;
 							lengthOfLinks++;
 						}
-						if (lengthOfLinks == 3){
+						if (lengthOfLinks >= 3){
 							doubleHash = true;
 						}
-						else{
-							tempLinked->next = current;
-						}
+						tempLinked->next = current;
 					}
 					else{
 						tempHash[hashMe(current, tempHashLen)] = current;
 					}
+					Student* temp = current;
+					current = current->next;
+					temp->next = nullptr;
 				}
 			}
 
