@@ -209,7 +209,7 @@ int main(){
 			//Loop through hashTable
 			for (int i = 0; i < hashLen; i++){
 				current = hashTable[i];
-				while (current != nullptr){
+				if (current != nullptr){
 		
 					//Add to tempHashTable array
 					if (tempHash[hashMe(current, tempHashLen)] != nullptr){
@@ -233,7 +233,6 @@ int main(){
 			}
 
 			//If works
-			
 			if (not doubleHash){
 				hashLen = tempHashLen;
 				hashTable = tempHash;

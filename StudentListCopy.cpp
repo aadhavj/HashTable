@@ -41,12 +41,12 @@ int main(){
 	int inputID;
 	float GPA;
 	bool runProgram = true;
-	Student* hashTable[100];
+	int hashLen = 100;
+	int tempHashLen = 100;
+	Student** hashTable = new Student*[hashLen];
 	char* firstNames[1000];
 	char* lastNames[1000];
-	int hashLen = 100;
 	int latestID = 100000;
-	Student* allStudents[10000];
 	srand(static_cast<unsigned int>(time(nullptr)));
 	bool doubleHash = false;
 	
@@ -60,8 +60,6 @@ int main(){
 	//hashTable nullification
 	nullify(hashTable, hashLen);
 
-	//allStudents nullification
-	nullify(allStudents,10000);
 
 	//Name instantiation
 	ifstream firstNameFile("firstNames.txt");
@@ -93,16 +91,6 @@ int main(){
 			//Gets student ID to delete
 			cout << "Enter Student ID (Delete): ";
 			cin >> inputID;
-			
-			//Loops through and deletes student with that ID
-			int i = 0;
-			for (Student* element : hashTable){
-				if (element->ID == inputID){
-					delete hashTable[i];
-					hashTable[i] = nullptr;
-				}
-				i++;
-			}
 		}
 		else if (strcmp(command, print) == 0) {
 			cout << "Print command initiated" << endl;
@@ -152,7 +140,7 @@ int main(){
 					numberOfLinkedStudents++;
 				}
 				if (numberOfLinkedStudents == 3){ //Collision Detected
-					cout << "Error: Not adding student because linked has reached max of 3 student objects." << endl;
+					//cout << "Error: Not adding student because linked has reached max of 3 student objects." << endl;
 					doubleHash = true;
 				}
 				else{
@@ -162,8 +150,6 @@ int main(){
 			else{
 				hashTable[hashMe(createdStudent, hashLen)] = createdStudent;
 			}
-			//Add to quene
-			allStudents[createdStudent->ID%10000] = createdStudent;
 
 		}
 		else if (strcmp(command, addRandom) == 0){
@@ -188,7 +174,7 @@ int main(){
 					}
 					if (numberOfLinkedStudents == 3){ //Collision Detected
 						doubleHash = true;
-						cout << "Error: Not adding student because linked has reached max of 3 student objects." << endl;
+						//cout << "Error: Not adding student because linked has reached max of 3 student objects." << endl;
 					}
 					else{
 						tempLinked->next = createdStudent;
@@ -197,11 +183,7 @@ int main(){
 				else{
 					hashTable[hashMe(createdStudent, hashLen)] = createdStudent;
 				}
-
-			}
-			//Add to quene
-			allStudents[createdStudent->ID%10000] = createdStudent;
-	
+			}	
 
 		}
 		else if (strcmp(command, quit) == 0){
@@ -216,41 +198,48 @@ int main(){
 		}
 
 		while (doubleHash){
+
+			//set doublehash false and instantiate tempHash
 			doubleHash = false;
-			hashLen = hashLen*2;
-			Student* tempHash[hashLen];
-			nullify(tempHash, hashLen);
-			for (int i = 0; i < 10000;i++){
-				if (allStudents[i] != nullptr){
-					Student* addMe = allStudents[i];
-					
-					//Add to hashTable array
-					if (tempHash[hashMe(addMe, hashLen)] != nullptr){
-						Student* tempLinked = tempHash[hashMe(addMe, hashLen)];
-						int numberOfLinkedStudents = 1;
+			tempHashLen = tempHashLen*2;
+			Student** tempHash = new Student*[tempHashLen];
+			nullify(tempHash, tempHashLen);
+			Student* current;
+
+			//Loop through hashTable
+			for (int i = 0; i < hashLen; i++){
+				current = hashTable[i];
+				if (current != nullptr){
+		
+					//Add to tempHashTable array
+					if (tempHash[hashMe(current, tempHashLen)] != nullptr){
+						int lengthOfLinks = 1;
+						Student* tempLinked = tempHash[hashMe(current, tempHashLen)];
 						while (tempLinked->next != nullptr){
 							tempLinked = tempLinked->next;
-							numberOfLinkedStudents++;
+							lengthOfLinks++;
 						}
-						if (numberOfLinkedStudents == 3){ //Collision Detected
+						if (lengthOfLinks == 3){
 							doubleHash = true;
-							cout << "Error: Not adding student because linked has reached max of 3 student objects." << endl;
 						}
 						else{
-							tempLinked->next = addMe;
+							tempLinked->next = current;
 						}
 					}
 					else{
-						tempHash[hashMe(addMe, hashLen)] = addMe;
+						tempHash[hashMe(current, tempHashLen)] = current;
 					}
-
-				}	
+				}
 			}
+
+			//If works
 			if (not doubleHash){
+				hashLen = tempHashLen;
 				hashTable = tempHash;
 			}
-
+			
 		}
+	}
 	//Farewell program end text
 	//cout << "Thank you for interacting with our student database. Please do so again!";	
 	return 0;
