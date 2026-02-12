@@ -15,14 +15,17 @@ struct Student {
 	float GPA;
 	Student* next;
 };
+//hash function
 int hashMe(Student* hashable, int maxLen){
 	return ( (int) ( (float) hashable->ID * hashable->GPA) % maxLen);
 }
+//Sets all spots in array to nullptr
 void nullify(Student** hashTable, int hashLen){
 	for (int i = 0; i < hashLen; i++){
 		hashTable[i] = nullptr;
 	}
 }
+//Gets number of student objects in array
 int getLength(Student** hashTable, int hashLen){
 	int numberOfStudents = 0;
 	for (int i = 0; i < hashLen; i++){
@@ -34,12 +37,13 @@ int getLength(Student** hashTable, int hashLen){
 	}
 	return numberOfStudents;
 }
+//Makes a random student
 Student* getRandomStudent(char** firstNames, char** lastNames, int inputID){
 	Student* rando = new Student();
 	strcpy(rando->firstName,firstNames[rand() % 1000]);
 	strcpy(rando->lastName,lastNames[rand() % 1000]);
 	rando->ID = inputID;
-	rando->GPA = (((float) (rand()%4001)) / 100.0);
+	rando->GPA = (((float) (rand()%4001)) / 1000.0);
 	rando->next = nullptr;
 	return rando;
 }
@@ -52,13 +56,14 @@ int main(){
 	int inputID;
 	float GPA;
 	bool runProgram = true;
-	int hashLen = 10;
-	int tempHashLen = 10;
+	int hashLen = 100;
+	int tempHashLen = 100;
 	Student** hashTable = new Student*[hashLen];
 	char* firstNames[1000];
 	char* lastNames[1000];
 	int latestID = 100000;
 	srand(static_cast<unsigned int>(time(nullptr)));
+
 	bool doubleHash = false;
 	
 	//Valid Command prompts
@@ -106,7 +111,7 @@ int main(){
 			cout << "Enter Student ID (Delete): ";
 			cin >> inputID;
 			
-			//search through hashTable
+			//search through hashTable and deletes and relinks objects
 			for (int i = 0; i < hashLen;i++){
 				Student* current = hashTable[i];
 				Student* prev = current;
@@ -133,7 +138,8 @@ int main(){
 					}
 				}
 			}
-
+			
+			//If student ID not in list, let user know
 			if (not objectDeleted){
 				cout << "Invalid student ID. An object with that ID does not currently exist." << endl;
 			}
@@ -170,7 +176,7 @@ int main(){
 			cout << "\nStudent GPA: ";
 			cin >> GPA;
 			
-			//Assgin to object
+			//Assign to object
 			strcpy(createdStudent->firstName,fName);
 			strcpy(createdStudent->lastName,lName);
 			createdStudent->ID = inputID;
@@ -186,12 +192,9 @@ int main(){
 					numberOfLinkedStudents++;
 				}
 				if (numberOfLinkedStudents == 3){ //Collision Detected
-					//cout << "Error: Not adding student because linked has reached max of 3 student objects." << endl;
 					doubleHash = true;
 				}
-				else{
-					tempLinked->next = createdStudent;
-				}
+				tempLinked->next = createdStudent;
 			}
 			else{
 				hashTable[hashMe(createdStudent, hashLen)] = createdStudent;
@@ -199,6 +202,7 @@ int main(){
 
 		}
 		else if (strcmp(command, addRandom) == 0){
+			//Adds a random student
 			cout << "Adding random student initiated" << endl;
 
 			int numRepitition;
@@ -220,7 +224,6 @@ int main(){
 					}
 					if (numberOfLinkedStudents >= 3){ //Collision Detected
 						doubleHash = true;
-						//cout << "Error: Not adding student because linked has reached max of 3 student objects." << endl;
 					}
 					
 					tempLinked->next = createdStudent;
@@ -233,12 +236,11 @@ int main(){
 
 		}
 		else if (strcmp(command, num) == 0){
-			cout << "Counting all student objects in hashtable." << endl;
+			//Get the number of objects in hashTable
 			cout << "There are " << getLength(hashTable, hashLen) << " student objects. "<< endl;
 		}
 		else if (strcmp(command, quit) == 0){
 
-			cout << "Quit command initiated. Program off." << endl;
 			//End Program functionality
 			runProgram = false;
 		}
@@ -246,9 +248,8 @@ int main(){
 			//Invalid comands, print message
 			cout << "Command prompt unrecognized." << endl;
 		}
-
 		while (doubleHash){
-
+			
 			//set doublehash false and instantiate tempHash
 			doubleHash = false;
 			tempHashLen = tempHashLen*2;
@@ -256,7 +257,7 @@ int main(){
 			nullify(tempHash, tempHashLen);
 			Student* current;
 
-			//Loop through hashTable
+			//Loops through hashTable and reorganizes into bigger temp hash table
 			for (int i = 0; i < hashLen; i++){
 				current = hashTable[i];
 				while (current != nullptr){
@@ -282,16 +283,12 @@ int main(){
 					temp->next = nullptr;
 				}
 			}
-
-			//If works
-			if (not doubleHash){
-				hashLen = tempHashLen;
-				hashTable = tempHash;
-			}
+			hashLen = tempHashLen;
+			hashTable = tempHash;
 			
 		}
 	}
 	//Farewell program end text
-	//cout << "Thank you for interacting with our student database. Please do so again!";	
+	cout << "Thank you for interacting with our student database. Please do so again!";	
 	return 0;
 }
