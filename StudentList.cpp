@@ -23,6 +23,17 @@ void nullify(Student** hashTable, int hashLen){
 		hashTable[i] = nullptr;
 	}
 }
+int getLength(Student** hashTable, int hashLen){
+	int numberOfStudents = 0;
+	for (int i = 0; i < hashLen; i++){
+		Student* current = hashTable[i];
+		while (current != nullptr){
+			numberOfStudents++;
+			current = current->next;
+		}
+	}
+	return numberOfStudents;
+}
 Student* getRandomStudent(char** firstNames, char** lastNames, int inputID){
 	Student* rando = new Student();
 	strcpy(rando->firstName,firstNames[rand() % 1000]);
@@ -41,8 +52,8 @@ int main(){
 	int inputID;
 	float GPA;
 	bool runProgram = true;
-	int hashLen = 100;
-	int tempHashLen = 100;
+	int hashLen = 10;
+	int tempHashLen = 10;
 	Student** hashTable = new Student*[hashLen];
 	char* firstNames[1000];
 	char* lastNames[1000];
@@ -56,6 +67,7 @@ int main(){
 	char add[] = "ADD";
 	char addRandom[] = "ADDR";
 	char quit[] = "QUIT";
+	char num[] = "NUM";
 	
 	//hashTable nullification
 	nullify(hashTable, hashLen);
@@ -219,6 +231,10 @@ int main(){
 				}
 			}	
 
+		}
+		else if (strcmp(command, num) == 0){
+			cout << "Counting all student objects in hashtable." << endl;
+			cout << "There are " << getLength(hashTable, hashLen) << " student objects. "<< endl;
 		}
 		else if (strcmp(command, quit) == 0){
 
